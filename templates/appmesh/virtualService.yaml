@@ -1,0 +1,48 @@
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: VirtualService
+metadata:
+  name: productpage
+  namespace: my-apps
+spec:
+  awsName: productpage.my-apps.svc.cluster.local
+  provider:
+    virtualRouter:
+      virtualRouterRef:
+        name: productpage-virtual-router
+---
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: VirtualService
+metadata:
+  name: reviews
+  namespace: my-apps
+spec:
+  awsName: reviews.my-apps.svc.cluster.local
+  provider:
+    virtualRouter:
+      virtualRouterRef:
+        name: reviews-virtual-router
+---
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: VirtualService
+metadata:
+  name: ratings
+  namespace: my-apps
+spec:
+  awsName: ratings.my-apps.svc.cluster.local
+  provider:
+    virtualRouter:
+      virtualRouterRef:
+        name: ratings-virtual-router
+---
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: VirtualService
+metadata:
+  name: details
+  namespace: my-apps
+spec:
+  awsName: details.my-apps.svc.cluster.local
+  provider:
+    virtualRouter:
+      virtualRouterRef:
+        name: details-virtual-router
+---

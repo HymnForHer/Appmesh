@@ -1,0 +1,142 @@
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: VirtualGateway
+metadata:
+  name: ingress-gw
+  namespace: my-apps
+spec:
+  namespaceSelector:
+    matchLabels:
+      appmesh.k8s.aws/sidecarInjectorWebhook: enabled
+  podSelector:
+    matchLabels:
+      app: ingress-gw
+  listeners:
+    - portMapping:
+        port: 9080
+        protocol: http
+---
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: GatewayRoute
+metadata:
+  name: gateway-route-headers-1
+  namespace: my-apps
+  labels:
+    gateway: ingress-gw
+spec:
+  httpRoute:
+    match:
+      prefix: /productpage
+    action:
+      target:
+        virtualService:
+          virtualServiceRef:
+            name: productpage
+---
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: GatewayRoute
+metadata:
+  name: gateway-route-headers-2
+  namespace: my-apps
+  labels:
+    gateway: ingress-gw
+spec:
+  httpRoute:
+    match:
+      prefix: /static
+    action:
+      target:
+        virtualService:
+          virtualServiceRef:
+            name: productpage
+---
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: GatewayRoute
+metadata:
+  name: gateway-route-headers-3
+  namespace: my-apps
+  labels:
+    gateway: ingress-gw
+spec:
+  httpRoute:
+    match:
+      prefix: /login
+    action:
+      target:
+        virtualService:
+          virtualServiceRef:
+            name: productpage
+---
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: GatewayRoute
+metadata:
+  name: gateway-route-headers-4
+  namespace: my-apps
+  labels:
+    gateway: ingress-gw
+spec:
+  httpRoute:
+    match:
+      prefix: /logout
+    action:
+      target:
+        virtualService:
+          virtualServiceRef:
+            name: productpage
+---
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: GatewayRoute
+metadata:
+  name: gateway-route-headers-5
+  namespace: my-apps
+  labels:
+    gateway: ingress-gw
+spec:
+  httpRoute:
+    match:
+      prefix: /api/v1/products
+    action:
+      target:
+        virtualService:
+          virtualServiceRef:
+            name: productpage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingress-gw
+  namespace: my-apps
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "elb"
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 8088
+      name: http
+  selector:
+    app: ingress-gw
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ingress-gw
+  namespace: my-apps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ingress-gw
+  template:
+    metadata:
+      labels:
+        app: ingress-gw
+    spec:
+      serviceAccountName: my-apps-sa-gw
+      securityContext:
+        fsGroup: 65534
+      containers:
+        - name: envoy
+          image: public.ecr.aws/appmesh/aws-appmesh-envoy:v1.23.1.0-prod
+          ports:
+            - containerPort: 8088
+---
